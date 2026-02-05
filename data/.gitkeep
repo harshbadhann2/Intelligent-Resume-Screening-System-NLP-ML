@@ -1,0 +1,11 @@
+# Placeholder for raw datasets
+Place resume and job description datasets here.
+
+Kaggle datasets:
+- https://www.kaggle.com/datasets/resumes-dataset
+- https://www.kaggle.com/datasets/janzz/resume-data
+
+Directory structure:
+- resumes/ - Store resume text files (.txt)
+- jobs/ - Store job description files (.txt)
+- Resume.csv - Kaggle resume dataset

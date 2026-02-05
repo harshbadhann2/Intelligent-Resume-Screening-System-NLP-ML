@@ -1,0 +1,8 @@
+# Placeholder for trained models
+Models will be saved here during training.
+
+Structure:
+- tfidf_model/ - TF-IDF vectorizer and vocabulary
+- word2vec_model/ - Word2Vec embeddings
+- bert_model/ - BERT sentence transformer
+- ranking_model/ - Classification/ranking model

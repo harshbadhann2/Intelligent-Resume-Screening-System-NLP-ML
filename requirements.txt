@@ -1,0 +1,29 @@
+# Core NLP/ML (Python 3.14 compatible)
+numpy
+pandas
+scikit-learn
+scipy
+nltk
+tqdm
+
+# Deep Learning (optional - install separately if needed)
+# torch
+# transformers
+# sentence-transformers
+# gensim
+
+# Visualization
+matplotlib
+seaborn
+
+# Jupyter
+jupyter
+notebook
+ipython
+
+# Testing & Utils
+pytest
+requests
+beautifulsoup4
+python-dotenv
+flask
