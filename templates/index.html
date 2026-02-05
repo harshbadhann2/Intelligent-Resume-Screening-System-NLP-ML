@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Screening System | AI-Powered Resume Ranking</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>ResumeAI</span>
+            </div>
+            <nav class="nav">
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#screen" class="btn btn-primary">Start Screening</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Intelligent Resume Screening</h1>
+                <p>AI-powered system using NLP & Machine Learning to automatically rank resumes based on job requirements</p>
+                <a href="#screen" class="btn btn-large btn-primary">
+                    <i class="fas fa-rocket"></i> Start Screening Now
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">85%</span>
+                    <span class="stat-label">Time Saved</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">TF-IDF</span>
+                    <span class="stat-label">NLP Algorithm</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">12+</span>
+                    <span class="stat-label">Skill Categories</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>1. Enter Job Description</h3>
+                    <p>Paste the job requirements and desired skills</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>2. Add Resumes</h3>
+                    <p>Upload or paste candidate resumes</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>3. AI Analysis</h3>
+                    <p>Our NLP engine processes and scores each resume</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>4. Get Rankings</h3>
+                    <p>View ranked candidates with match percentages</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Powerful Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-search-plus"></i>
+                    <h3>Skill Extraction</h3>
+                    <p>Automatically identifies technical skills, programming languages, and certifications</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Smart Scoring</h3>
+                    <p>TF-IDF algorithm provides accurate similarity scoring</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Instant Results</h3>
+                    <p>Process multiple resumes in seconds</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Contact Extraction</h3>
+                    <p>Automatically extracts emails and phone numbers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Screening Section -->
+    <section id="screen" class="screening-section">
+        <div class="container">
+            <h2>Resume Screening Tool</h2>
+            
+            <div class="screening-container">
+                <!-- Job Description Panel -->
+                <div class="panel job-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>Job Description</h3>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="jobDescription" placeholder="Paste the job description here...
+
+Example:
+Senior Python Developer - Machine Learning
+
+Requirements:
+- 5+ years Python development
+- Experience with TensorFlow/PyTorch
+- Django or FastAPI knowledge
+- AWS cloud expertise
+- Strong problem-solving skills"></textarea>
+                    </div>
+                </div>
+
+                <!-- Resumes Panel -->
+                <div class="panel resumes-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-file-user"></i>
+                        <h3>Candidate Resumes</h3>
+                        <button class="btn btn-small btn-secondary" onclick="addResumeField()">
+                            <i class="fas fa-plus"></i> Add Resume
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="resumeContainer">
+                            <div class="resume-input" data-index="0">
+                                <div class="resume-header">
+                                    <span class="resume-label">Resume #1</span>
+                                    <button class="btn-icon" onclick="removeResume(this)" title="Remove">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <textarea placeholder="Paste resume text here...
+
+Example:
+John Smith
+Senior Python Developer
+
+Experience:
+- 7 years Python development
+- Django framework expertise
+- AWS cloud architecture
+- Machine learning with TensorFlow
+
+Skills: Python, Django, FastAPI, TensorFlow, PyTorch, AWS, Docker"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="action-container">
+                <button id="analyzeBtn" class="btn btn-large btn-primary" onclick="analyzeResumes()">
+                    <i class="fas fa-search"></i> Analyze & Rank Resumes
+                </button>
+                <button class="btn btn-large btn-secondary" onclick="loadSampleData()">
+                    <i class="fas fa-flask"></i> Load Sample Data
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Analyzing resumes with AI...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section hidden">
+                <div class="results-header">
+                    <h2><i class="fas fa-trophy"></i> Ranking Results</h2>
+                    <button class="btn btn-secondary" onclick="exportResults()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+                <div id="resultsContainer" class="results-container">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-brain"></i>
+                    <span>ResumeAI</span>
+                </div>
+                <p>Intelligent Resume Screening System powered by NLP & Machine Learning</p>
+                <div class="footer-links">
+                    <a href="https://github.com/harshbadhann2/Intelligent-Resume-Screening-System-NLP-ML" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ResumeAI. Built with Python, scikit-learn & Flask.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
