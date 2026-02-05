@@ -162,19 +162,66 @@ Requirements:
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <textarea placeholder="Paste resume text here...
-
-Example:
-John Smith
-Senior Python Developer
-
-Experience:
-- 7 years Python development
-- Django framework expertise
-- AWS cloud architecture
-- Machine learning with TensorFlow
-
-Skills: Python, Django, FastAPI, TensorFlow, PyTorch, AWS, Docker"></textarea>
+                                <div class="upload-options">
+                                    <div class="upload-tabs">
+                                        <button class="upload-tab active" onclick="switchInputMode(this, 'file')" data-mode="file">
+                                            <i class="fas fa-upload"></i> Upload File
+                                        </button>
+                                        <button class="upload-tab" onclick="switchInputMode(this, 'url')" data-mode="url">
+                                            <i class="fas fa-link"></i> URL
+                                        </button>
+                                        <button class="upload-tab" onclick="switchInputMode(this, 'text')" data-mode="text">
+                                            <i class="fas fa-keyboard"></i> Paste Text
+                                        </button>
+                                    </div>
+                                    <div class="upload-content">
+                                        <!-- File Upload -->
+                                        <div class="upload-mode file-mode active">
+                                            <div class="file-drop-zone" ondrop="handleFileDrop(event, this)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                                <input type="file" class="file-input" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event, this)">
+                                                <div class="drop-zone-content">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                    <p>Drop PDF, DOCX, or DOC file here</p>
+                                                    <span>or click to browse</span>
+                                                </div>
+                                                <div class="file-info hidden">
+                                                    <i class="fas fa-file-alt"></i>
+                                                    <span class="file-name"></span>
+                                                    <span class="file-status"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- URL Input -->
+                                        <div class="upload-mode url-mode">
+                                            <div class="url-input-wrapper">
+                                                <input type="url" class="url-input" placeholder="https://example.com/resume.pdf">
+                                                <button class="btn btn-small btn-primary" onclick="fetchFromUrl(this)">
+                                                    <i class="fas fa-download"></i> Fetch
+                                                </button>
+                                            </div>
+                                            <p class="url-hint">Supports PDF, DOCX links or any webpage with resume content</p>
+                                        </div>
+                                        <!-- Text Input -->
+                                        <div class="upload-mode text-mode">
+                                            <textarea placeholder="Paste resume text here..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="resume-preview hidden">
+                                    <div class="preview-header">
+                                        <span><i class="fas fa-check-circle"></i> Resume Loaded</span>
+                                        <button class="btn-icon" onclick="clearResume(this)" title="Clear">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                    <div class="preview-stats">
+                                        <span class="stat-item"><i class="fas fa-file-word"></i> <span class="word-count">0</span> words</span>
+                                        <span class="stat-item"><i class="fas fa-code"></i> <span class="skill-count">0</span> skills detected</span>
+                                    </div>
+                                    <div class="preview-skills"></div>
+                                </div>
+                                <!-- Hidden textarea to store extracted text -->
+                                <textarea class="resume-text-storage hidden"></textarea>
                             </div>
                         </div>
                     </div>

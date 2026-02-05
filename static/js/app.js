@@ -1,5 +1,6 @@
 /**
  * Resume Screening System - Frontend JavaScript
+ * Supports PDF, DOCX, URL, and text input
  */
 
 // Global state
@@ -84,8 +85,246 @@ JavaScript, React, Node.js, MongoDB, CSS, HTML, Express, Redux, GraphQL, Git`
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Resume Screening System initialized');
+    console.log('Resume Screening System v2.0 initialized');
+    console.log('Supported formats: PDF, DOCX, DOC, TXT, URL');
 });
+
+/**
+ * Switch between file, url, and text input modes
+ */
+function switchInputMode(button, mode) {
+    const resumeInput = button.closest('.resume-input');
+    const tabs = resumeInput.querySelectorAll('.upload-tab');
+    const modes = resumeInput.querySelectorAll('.upload-mode');
+    
+    // Update tabs
+    tabs.forEach(tab => tab.classList.remove('active'));
+    button.classList.add('active');
+    
+    // Update modes
+    modes.forEach(m => m.classList.remove('active'));
+    resumeInput.querySelector(`.${mode}-mode`).classList.add('active');
+}
+
+/**
+ * Handle file drag over
+ */
+function handleDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.add('drag-over');
+}
+
+/**
+ * Handle file drag leave
+ */
+function handleDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.remove('drag-over');
+}
+
+/**
+ * Handle file drop
+ */
+function handleFileDrop(event, dropZone) {
+    event.preventDefault();
+    event.stopPropagation();
+    dropZone.classList.remove('drag-over');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        processFile(files[0], dropZone);
+    }
+}
+
+/**
+ * Handle file selection via input
+ */
+function handleFileSelect(event, input) {
+    const file = event.target.files[0];
+    if (file) {
+        const dropZone = input.closest('.file-drop-zone');
+        processFile(file, dropZone);
+    }
+}
+
+/**
+ * Process uploaded file
+ */
+async function processFile(file, dropZone) {
+    const resumeInput = dropZone.closest('.resume-input');
+    const dropContent = dropZone.querySelector('.drop-zone-content');
+    const fileInfo = dropZone.querySelector('.file-info');
+    const fileName = fileInfo.querySelector('.file-name');
+    const fileStatus = fileInfo.querySelector('.file-status');
+    
+    // Check file type
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedExtensions.includes(ext)) {
+        alert('Please upload a PDF, DOCX, DOC, or TXT file.');
+        return;
+    }
+    
+    // Show loading state
+    dropContent.classList.add('hidden');
+    fileInfo.classList.remove('hidden');
+    fileName.textContent = file.name;
+    fileStatus.textContent = 'Extracting text...';
+    fileStatus.className = 'file-status loading';
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            fileStatus.textContent = '✓ Loaded';
+            fileStatus.className = 'file-status success';
+            
+            // Store the extracted text
+            const storage = resumeInput.querySelector('.resume-text-storage');
+            storage.value = data.text;
+            
+            // Show preview
+            showResumePreview(resumeInput, data);
+        } else {
+            throw new Error(data.error || 'Failed to process file');
+        }
+    } catch (error) {
+        console.error('File upload error:', error);
+        fileStatus.textContent = '✗ Error';
+        fileStatus.className = 'file-status error';
+        alert(`Error processing file: ${error.message}`);
+        
+        // Reset drop zone
+        setTimeout(() => {
+            dropContent.classList.remove('hidden');
+            fileInfo.classList.add('hidden');
+        }, 2000);
+    }
+}
+
+/**
+ * Fetch resume from URL
+ */
+async function fetchFromUrl(button) {
+    const resumeInput = button.closest('.resume-input');
+    const urlInput = resumeInput.querySelector('.url-input');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        alert('Please enter a URL.');
+        urlInput.focus();
+        return;
+    }
+    
+    // Show loading state
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/api/fetch-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store the extracted text
+            const storage = resumeInput.querySelector('.resume-text-storage');
+            storage.value = data.text;
+            
+            // Show preview
+            showResumePreview(resumeInput, data);
+            
+            button.innerHTML = '<i class="fas fa-check"></i> Loaded';
+            button.className = 'btn btn-small btn-success';
+        } else {
+            throw new Error(data.error || 'Failed to fetch URL');
+        }
+    } catch (error) {
+        console.error('URL fetch error:', error);
+        alert(`Error fetching URL: ${error.message}`);
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+/**
+ * Show resume preview with extracted info
+ */
+function showResumePreview(resumeInput, data) {
+    const preview = resumeInput.querySelector('.resume-preview');
+    const uploadOptions = resumeInput.querySelector('.upload-options');
+    
+    // Update stats
+    preview.querySelector('.word-count').textContent = data.preview?.word_count || data.text.split(/\s+/).length;
+    preview.querySelector('.skill-count').textContent = data.preview?.skills?.length || 0;
+    
+    // Show skills
+    const skillsContainer = preview.querySelector('.preview-skills');
+    const skills = data.preview?.skills || [];
+    skillsContainer.innerHTML = skills.slice(0, 8).map(skill => 
+        `<span class="skill-tag">${skill}</span>`
+    ).join('');
+    
+    // Show preview, hide upload options
+    uploadOptions.classList.add('hidden');
+    preview.classList.remove('hidden');
+}
+
+/**
+ * Clear resume and reset to upload mode
+ */
+function clearResume(button) {
+    const resumeInput = button.closest('.resume-input');
+    const preview = resumeInput.querySelector('.resume-preview');
+    const uploadOptions = resumeInput.querySelector('.upload-options');
+    const storage = resumeInput.querySelector('.resume-text-storage');
+    const dropZone = resumeInput.querySelector('.file-drop-zone');
+    const textArea = resumeInput.querySelector('.text-mode textarea');
+    const urlInput = resumeInput.querySelector('.url-input');
+    
+    // Clear all inputs
+    storage.value = '';
+    if (textArea) textArea.value = '';
+    if (urlInput) urlInput.value = '';
+    
+    // Reset drop zone
+    if (dropZone) {
+        dropZone.querySelector('.drop-zone-content').classList.remove('hidden');
+        dropZone.querySelector('.file-info').classList.add('hidden');
+        const fileInput = dropZone.querySelector('.file-input');
+        if (fileInput) fileInput.value = '';
+    }
+    
+    // Reset URL button
+    const urlButton = resumeInput.querySelector('.url-mode .btn');
+    if (urlButton) {
+        urlButton.innerHTML = '<i class="fas fa-download"></i> Fetch';
+        urlButton.className = 'btn btn-small btn-primary';
+        urlButton.disabled = false;
+    }
+    
+    // Show upload options, hide preview
+    uploadOptions.classList.remove('hidden');
+    preview.classList.add('hidden');
+}
 
 /**
  * Add a new resume input field
@@ -104,11 +343,68 @@ function addResumeField() {
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <textarea placeholder="Paste resume text here..."></textarea>
+        <div class="upload-options">
+            <div class="upload-tabs">
+                <button class="upload-tab active" onclick="switchInputMode(this, 'file')" data-mode="file">
+                    <i class="fas fa-upload"></i> Upload File
+                </button>
+                <button class="upload-tab" onclick="switchInputMode(this, 'url')" data-mode="url">
+                    <i class="fas fa-link"></i> URL
+                </button>
+                <button class="upload-tab" onclick="switchInputMode(this, 'text')" data-mode="text">
+                    <i class="fas fa-keyboard"></i> Paste Text
+                </button>
+            </div>
+            <div class="upload-content">
+                <!-- File Upload -->
+                <div class="upload-mode file-mode active">
+                    <div class="file-drop-zone" ondrop="handleFileDrop(event, this)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <input type="file" class="file-input" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event, this)">
+                        <div class="drop-zone-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drop PDF, DOCX, or DOC file here</p>
+                            <span>or click to browse</span>
+                        </div>
+                        <div class="file-info hidden">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="file-name"></span>
+                            <span class="file-status"></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- URL Input -->
+                <div class="upload-mode url-mode">
+                    <div class="url-input-wrapper">
+                        <input type="url" class="url-input" placeholder="https://example.com/resume.pdf">
+                        <button class="btn btn-small btn-primary" onclick="fetchFromUrl(this)">
+                            <i class="fas fa-download"></i> Fetch
+                        </button>
+                    </div>
+                    <p class="url-hint">Supports PDF, DOCX links or any webpage with resume content</p>
+                </div>
+                <!-- Text Input -->
+                <div class="upload-mode text-mode">
+                    <textarea placeholder="Paste resume text here..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="resume-preview hidden">
+            <div class="preview-header">
+                <span><i class="fas fa-check-circle"></i> Resume Loaded</span>
+                <button class="btn-icon" onclick="clearResume(this)" title="Clear">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div class="preview-stats">
+                <span class="stat-item"><i class="fas fa-file-word"></i> <span class="word-count">0</span> words</span>
+                <span class="stat-item"><i class="fas fa-code"></i> <span class="skill-count">0</span> skills detected</span>
+            </div>
+            <div class="preview-skills"></div>
+        </div>
+        <textarea class="resume-text-storage hidden"></textarea>
     `;
     
     container.appendChild(resumeDiv);
-    resumeDiv.querySelector('textarea').focus();
 }
 
 /**
@@ -148,7 +444,7 @@ function loadSampleData() {
     container.innerHTML = '';
     resumeCount = 0;
     
-    // Add sample resumes
+    // Add sample resumes with text mode
     sampleResumes.forEach((resume, index) => {
         resumeCount++;
         const resumeDiv = document.createElement('div');
@@ -161,7 +457,64 @@ function loadSampleData() {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <textarea placeholder="Paste resume text here...">${resume}</textarea>
+            <div class="upload-options hidden">
+                <div class="upload-tabs">
+                    <button class="upload-tab" onclick="switchInputMode(this, 'file')" data-mode="file">
+                        <i class="fas fa-upload"></i> Upload File
+                    </button>
+                    <button class="upload-tab" onclick="switchInputMode(this, 'url')" data-mode="url">
+                        <i class="fas fa-link"></i> URL
+                    </button>
+                    <button class="upload-tab active" onclick="switchInputMode(this, 'text')" data-mode="text">
+                        <i class="fas fa-keyboard"></i> Paste Text
+                    </button>
+                </div>
+                <div class="upload-content">
+                    <div class="upload-mode file-mode">
+                        <div class="file-drop-zone" ondrop="handleFileDrop(event, this)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <input type="file" class="file-input" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event, this)">
+                            <div class="drop-zone-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drop PDF, DOCX, or DOC file here</p>
+                                <span>or click to browse</span>
+                            </div>
+                            <div class="file-info hidden">
+                                <i class="fas fa-file-alt"></i>
+                                <span class="file-name"></span>
+                                <span class="file-status"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="upload-mode url-mode">
+                        <div class="url-input-wrapper">
+                            <input type="url" class="url-input" placeholder="https://example.com/resume.pdf">
+                            <button class="btn btn-small btn-primary" onclick="fetchFromUrl(this)">
+                                <i class="fas fa-download"></i> Fetch
+                            </button>
+                        </div>
+                        <p class="url-hint">Supports PDF, DOCX links or any webpage with resume content</p>
+                    </div>
+                    <div class="upload-mode text-mode active">
+                        <textarea placeholder="Paste resume text here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="resume-preview">
+                <div class="preview-header">
+                    <span><i class="fas fa-check-circle"></i> Sample Resume Loaded</span>
+                    <button class="btn-icon" onclick="clearResume(this)" title="Clear">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                <div class="preview-stats">
+                    <span class="stat-item"><i class="fas fa-file-word"></i> <span class="word-count">${resume.split(/\s+/).length}</span> words</span>
+                    <span class="stat-item"><i class="fas fa-code"></i> <span class="skill-count">${extractSkillsFromText(resume).length}</span> skills detected</span>
+                </div>
+                <div class="preview-skills">
+                    ${extractSkillsFromText(resume).slice(0, 6).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                </div>
+            </div>
+            <textarea class="resume-text-storage hidden">${resume}</textarea>
         `;
         container.appendChild(resumeDiv);
     });
@@ -175,7 +528,7 @@ function loadSampleData() {
  */
 async function analyzeResumes() {
     const jobDescription = document.getElementById('jobDescription').value.trim();
-    const resumeTextareas = document.querySelectorAll('.resume-input textarea');
+    const resumeInputs = document.querySelectorAll('.resume-input');
     
     // Validation
     if (!jobDescription) {
@@ -184,16 +537,26 @@ async function analyzeResumes() {
         return;
     }
     
+    // Collect resume texts from storage (for uploaded files) or text mode textarea
     const resumes = [];
-    resumeTextareas.forEach(textarea => {
-        const text = textarea.value.trim();
+    resumeInputs.forEach((input, idx) => {
+        // First check the hidden storage (for uploaded files/URLs)
+        const storage = input.querySelector('.resume-text-storage');
+        let text = storage?.value?.trim() || '';
+        
+        // If no stored text, check the text mode textarea
+        if (!text) {
+            const textArea = input.querySelector('.text-mode textarea');
+            text = textArea?.value?.trim() || '';
+        }
+        
         if (text) {
             resumes.push(text);
         }
     });
     
     if (resumes.length === 0) {
-        alert('Please add at least one resume.');
+        alert('Please add at least one resume (upload a file, enter a URL, or paste text).');
         return;
     }
     
@@ -252,8 +615,18 @@ function displayResults(data) {
         const card = document.createElement('div');
         card.className = `result-card rank-${rank}`;
         
-        // Extract name from resume (first line typically)
-        const resumeText = document.querySelectorAll('.resume-input textarea')[resumeIdx]?.value || '';
+        // Get resume text from storage (for uploaded files) or text mode textarea
+        const resumeInputs = document.querySelectorAll('.resume-input');
+        let resumeText = '';
+        if (resumeInputs[resumeIdx]) {
+            const storage = resumeInputs[resumeIdx].querySelector('.resume-text-storage');
+            resumeText = storage?.value || '';
+            if (!resumeText) {
+                const textArea = resumeInputs[resumeIdx].querySelector('.text-mode textarea');
+                resumeText = textArea?.value || '';
+            }
+        }
+        
         const firstLine = resumeText.split('\n')[0].trim();
         const candidateName = firstLine || `Candidate ${resumeIdx + 1}`;
         
